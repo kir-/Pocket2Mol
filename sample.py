@@ -147,8 +147,8 @@ def get_next(data, model, transform, threshold):
 
 
 def print_pool_status(pool, logger):
-    logger.info('[Pool] Queue %d | Finished %d | Failed %d' % (
-        len(pool.queue), len(pool.finished), len(pool.failed)
+    logger.info('[Pool] Queue %d | Finished %d | Failed %d | Duplicate %d' % (
+        len(pool.queue), len(pool.finished), len(pool.failed), len(pool.duplicate)
     ))
 
 
@@ -301,6 +301,8 @@ if __name__ == '__main__':
                         if smiles in pool.smiles:
                             logger.warning('Duplicate molecule: %s' % smiles)
                             pool.duplicate.append(data_next)
+                            pool.finished.append(data_next)
+                            pool.smiles.add(smiles)
                         elif '.' in smiles:
                             logger.warning('Failed molecule: %s' % smiles)
                             pool.failed.append(data_next)
@@ -328,9 +330,10 @@ if __name__ == '__main__':
     sdf_dir = os.path.join(log_dir, 'SDF')
     os.makedirs(sdf_dir)
     with open(os.path.join(log_dir, 'SMILES.txt'), 'a') as smiles_f:
+        smiles_f.write('duplicates: '+ len(pool['duplicate'])  )
         for i, data_finished in enumerate(pool['finished']):
             smiles_f.write(data_finished.smiles + '\n')
             rdmol = data_finished.rdmol
             Chem.MolToMolFile(rdmol, os.path.join(sdf_dir, '%d.sdf' % i))
-
+    
     torch.save(pool, os.path.join(log_dir, 'samples_all.pt'))
