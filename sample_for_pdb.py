@@ -187,6 +187,8 @@ if __name__ == '__main__':
                             if smiles in pool.smiles:
                                 logger.warning('Duplicate molecule: %s' % smiles)
                                 pool.duplicate.append(data_next)
+                                pool.finished.append(data_next)
+                                pool.smiles.add(smiles)
                             elif '.' in smiles:
                                 logger.warning('Failed molecule: %s' % smiles)
                                 pool.failed.append(data_next)
